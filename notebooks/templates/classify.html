@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+    <title>Text Classification</title>
+</head>
+<body>
+    <h1>Text Classification</h1>
+    {% if data %}
+    <form method="POST">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Grupo</th>
+                    <th>Texto</th>
+                    <th>Sentimento</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for index, row in enumerate(data) %}
+                <tr>
+                    <td>{{ row['cluster'] }}</td>
+                    <td>{{ row['texto'] }}</td>
+                    <td>
+                        <select name="sentiment">
+                            <option value="positive">Positivo</option>
+                            <option value="negative">Negativo</option>
+                            <option value="neutral">Neutro</option>
+                        </select>
+                        <input type="hidden" name="group_number" value="{{ row['cluster'] }}">
+                        <input type="hidden" name="index" value="{{ index }}">
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <input type="submit" value="Enviar Classificação">
+    </form>
+    {% else %}
+    <p>Todos os grupos foram classificados.</p>
+    <p><a href="{{ url_for('upload_file') }}">Carregar outro arquivo</a></p>
+    {% endif %}
+</body>
+</html>
