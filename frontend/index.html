@@ -135,7 +135,10 @@ https://templatemo.com/tm-590-topic-listing
                     updateList(1);
                     showPie();
                 })
-                .catch((error) => console.error(error));
+                .catch((error) => {
+                    console.error(error);
+                    alert("Erro ao consultar informações na api")
+                });
 
             return false;
         }
