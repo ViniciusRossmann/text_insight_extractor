@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Topic Listing Page</title>
+
+    <!-- CSS FILES -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans&display=swap"
+        rel="stylesheet">
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="css/bootstrap-icons.css" rel="stylesheet">
+
+    <link href="css/templatemo-topic-listing.css" rel="stylesheet">
+    <!--
+
+TemplateMo 590 topic listing
+
+https://templatemo.com/tm-590-topic-listing
+
+-->
+</head>
+
+<body class="topics-listing-page section-bg" id="top">
+
+    <main>
+
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand" href="index.html">
+                    <span>Text Insight Extractor</span>
+                </a>
+
+                <div class="d-lg-none ms-auto me-4">
+                    <a href="#top" class="navbar-icon bi-person smoothscroll"></a>
+                </div>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+
+            </div>
+        </nav>
+
+        <section class="section-padding" style="margin-top: 65px; display: block;" id="form">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-3 col-12"></div>
+                    <div class="col-lg-6 col-12">
+                        <form action="#" method="post" class="custom-form contact-form" role="form"
+                            onsubmit="return getSentiments()">
+                            <div class="row">
+                                <h3 class="mb-4 pb-2">Avaliador de opiniões sobre produtos</h3>
+                                <div class="col-lg-12 col-12">
+                                    &nbsp;Faça upload de um arquivos com os textos das avaliações:
+                                    <div class="form-floating">
+                                        <input type="file" name="subject" id="name" class="form-control" onchange="processarArquivo(this.files[0])" style="padding-top: 1.1rem; padding-left: 2.1rem;">
+                                    </div>
+                                    &nbsp;Ou, se preferir, pode digitar os textos manualmente:
+                                    <div class="form-floating">
+                                        <textarea class="form-control" id="message" name="message" style="padding-top: 1rem;"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4 col-12 ms-auto">
+                                    <button type="submit" class="form-control">Avaliar</button>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-lg-3 col-12"></div>
+
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding" id="results" style="margin-top: 65px; display: none;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-3 col-8 text-center">
+                        <h3 class="mb-4">Resultado</h3>
+                        <canvas id="sentiments-chart"></canvas>
+                    </div>
+                    <div class="col-lg-9 col-12 text-center">
+                        <h3 class="mb-4">Textos classificados</h3>
+                        <div class="col-lg-12 col-12 mt-3 mx-auto" id="list-container"></div>
+                        <div class="col-lg-12 col-12">
+                            <nav aria-label="Page navigation example">
+                                <ul class="pagination justify-content-center mb-0" id="pagination-numbers"> </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+    </footer>
+
+    <!-- JAVASCRIPT FILES -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/jquery.sticky.js"></script>
+    <script src="js/custom.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var items = {};
+        const page_size = 5;
+
+        function getSentiments() {
+            let body = {
+                "text": document.getElementById("message").value
+            }
+
+            axios
+                .post("http://localhost:5000/classifications", body)
+                .then((response) => {
+                    items = response.data;
+                    updateList(1);
+                    showPie();
+                })
+                .catch((error) => console.error(error));
+
+            return false;
+        }
+
+        function updateList(page) {
+            document.getElementById("results").style.display = "block"
+            document.getElementById("form").style.display = "none"
+            let total = Object.entries(items).length;
+            let total_pages = Math.ceil(total / page_size)
+            let pages = Array(total_pages).fill(null).map((x, index) => index + 1);
+            console.log(pages, page)
+
+            let paginationNumbers = document.getElementById('pagination-numbers');
+            paginationNumbers.innerHTML = `
+            <li class="page-item">
+                <!--<div class="page-link">
+                    <span aria-hidden="true">Ant.</span>
+                </div>-->
+            </li>`;
+            pages.forEach(p => {
+                paginationNumbers.innerHTML +=
+                `<li class="page-item ` + (p == page ? "active" : "") + `" aria-current="page" page-index="` + p + `">
+                    <div class="page-link">`+ p + `</a>
+                </li>`;
+            });
+            paginationNumbers.innerHTML += `
+            <li class="page-item">
+                <!--<div class="page-link" aria-label="Next">
+                    <span aria-hidden="true">Próx.</span>
+                </div>-->
+            </li>`;
+
+            document.querySelectorAll(".page-item").forEach((button) => {
+                const pageIndex = Number(button.getAttribute("page-index"));
+
+                if (pageIndex) {
+                    button.addEventListener("click", () => {
+                        updateList(pageIndex);
+                    });
+                }
+            });
+
+            const tableBody = document.getElementById('list-container');
+            tableBody.innerHTML = "";
+            let initial = (page - 1) * page_size;
+            Object.entries(items).slice(initial, initial + page_size).forEach(([key, value]) => {
+                const row = document.createElement('div');
+                row.innerHTML = `
+                    <div class="custom-block custom-block-topics-listing bg-white shadow-lg mb-4">
+                        <div class="row">
+                            <div class="col-11"><p class="mb-0">` + key + `</p></div>
+                            <div class="col-1"><img src="images/` + value + `.jpg" width="30px" style="float: right;" alt="` + value + `"></div>
+                        </div>
+                    </div>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function showPie() {
+            let data = Object.values(items);
+
+            const positiveCount = data.filter(item => item == 'positive').length;
+            const negativeCount = data.length - positiveCount;
+
+            const ctx = document.getElementById('sentiments-chart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Positivo', 'Negativo'],
+                    datasets: [{
+                        data: [positiveCount, negativeCount],
+                        backgroundColor: ['#00C853', '#DD2C00']
+                    }]
+                }
+            });
+        }
+
+        function processarArquivo(arquivo) {
+            if (arquivo) {
+                var reader = new FileReader();
+                reader.readAsText(arquivo, "UTF-8");
+                reader.onload = function (evt) {
+                    document.getElementById("message").value = evt.target.result;
+                }
+                reader.onerror = function (evt) {
+                    alert("Erro ao processar arquivo")
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
