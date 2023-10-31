@@ -1,10 +1,12 @@
 import pickle
 from flask import Flask, request, send_file, jsonify
+from flask_cors import CORS
 
 model = pickle.load(open("./models/LogisticRegressionTextClassifier", 'rb'))
 vectorizer = pickle.load(open("./models/vectorizer", 'rb'))
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/', methods=['GET'])
 def home():
@@ -31,4 +33,4 @@ def classify():
     return jsonify(resultado)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0", port=5000)
