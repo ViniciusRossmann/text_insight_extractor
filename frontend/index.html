@@ -129,7 +129,7 @@ https://templatemo.com/tm-590-topic-listing
             }
 
             axios
-                .post("http://localhost:5000/classifications", body)
+                .post("https://text-insight-extractor.fly.dev/classifications", body)
                 .then((response) => {
                     items = response.data;
                     updateList(1);
