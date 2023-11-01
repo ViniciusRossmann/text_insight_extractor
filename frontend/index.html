@@ -120,7 +120,7 @@ https://templatemo.com/tm-590-topic-listing
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        var items = {};
+        var classifications = [];
         const page_size = 5;
 
         function getSentiments() {
@@ -129,9 +129,9 @@ https://templatemo.com/tm-590-topic-listing
             }
 
             axios
-                .post("https://text-insight-extractor.fly.dev/classifications", body)
+                .post("http://localhost:5000/classifications", body)
                 .then((response) => {
-                    items = response.data;
+                    classifications = response.data;
                     updateList(1);
                     showPie();
                 })
@@ -146,7 +146,7 @@ https://templatemo.com/tm-590-topic-listing
         function updateList(page) {
             document.getElementById("results").style.display = "block"
             document.getElementById("form").style.display = "none"
-            let total = Object.entries(items).length;
+            let total = classifications.length;
             let total_pages = Math.ceil(total / page_size)
             let pages = Array(total_pages).fill(null).map((x, index) => index + 1);
             console.log(pages, page)
@@ -184,13 +184,13 @@ https://templatemo.com/tm-590-topic-listing
             const tableBody = document.getElementById('list-container');
             tableBody.innerHTML = "";
             let initial = (page - 1) * page_size;
-            Object.entries(items).slice(initial, initial + page_size).forEach(([key, value]) => {
+            classifications.slice(initial, initial + page_size).forEach(cl => {
                 const row = document.createElement('div');
                 row.innerHTML = `
                     <div class="custom-block custom-block-topics-listing bg-white shadow-lg mb-4">
                         <div class="row">
-                            <div class="col-11"><p class="mb-0">` + key + `</p></div>
-                            <div class="col-1"><img src="images/` + value + `.jpg" width="30px" style="float: right;" alt="` + value + `"></div>
+                            <div class="col-11"><p class="mb-0">` + cl.text + `</p></div>
+                            <div class="col-1"><img src="images/` + cl.classification + `.jpg" width="30px" style="float: right;" alt="` + cl.classification + `"></div>
                         </div>
                     </div>
                 `;
@@ -199,7 +199,7 @@ https://templatemo.com/tm-590-topic-listing
         }
 
         function showPie() {
-            let data = Object.values(items);
+            let data = classifications.map(cl => cl.classification);
 
             const positiveCount = data.filter(item => item == 'positive').length;
             const negativeCount = data.length - positiveCount;
