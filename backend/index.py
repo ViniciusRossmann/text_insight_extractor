@@ -2,6 +2,8 @@ import pickle
 import re
 from flask import Flask, request, send_file, jsonify
 from flask_cors import CORS
+from nltk import download
+download('stopwords')
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 
@@ -21,7 +23,7 @@ def preprocess_text(text):
 
 @app.route('/', methods=['GET'])
 def home():
-    return "teste"
+    return "running"
 
 @app.route('/classifications', methods=['POST'])
 def classify():
